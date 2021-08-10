@@ -1,24 +1,41 @@
-import logo from './logo.svg';
+
+import { Fragment, useEffect, useState } from 'react';
+import {BrowserRouter as Router, Link, Switch, Route, Redirect} from 'react-router-dom'
 import './App.css';
+import Home from './components/Home';
+import Post from './components/Post';
+import { getEntries } from './services/getEntries';
+
 
 function App() {
+  const [entries, setEntries] = useState([]);
+
+  useEffect(() => {
+    const getData = async() => {
+      const data = await getEntries();
+      setEntries(data)
+    }
+    getData();
+  }, [])
+
+
+  const list = entries.map(entry => <li key={entry.id}><Link to={`/${entry.title}`}>{entry.title}</Link> - {entry.publishedAt}</li>)
+  const routes = entries.map(entry => <Route key={entry.id} path={`/${entry.title}`}><Post id={entry.id} entries={entries}/></Route>)
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Fragment >
+      <Router>
+          <Switch>
+            {routes}
+            <Route path="/home">
+              <Home list={list}/>
+            </Route>
+            <Route path="/">
+              <Redirect to="/home" />
+            </Route>
+          </Switch>
+      </Router>
+    </Fragment>
   );
 }
 
